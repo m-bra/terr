@@ -4,10 +4,12 @@
 
 <head>
 
-    <script
-      src="https://code.jquery.com/jquery-3.2.1.min.js"
-      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-      crossorigin="anonymous"></script>
+     <meta charset="UTF-8">
+
+     <script
+        src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
 
       <link rel="stylesheet"
           href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
@@ -25,36 +27,45 @@
     <style>
         html, body {
             height: 100%;
+            margin: 0px;
+            overflow-x: hidden;
+            overflow-y: hidden;
         }
 
         .full {
             min-height: 100%;
             height: 100%;
+            margin: 0px;
         }
 
         .firstpage {
-            height: 90%;
+            height: 100%;
+        }
+
+        .secondpage {
+            height: 100%;
+            margin: 0px;
         }
 
     </style>
+
+    <script src="dist/main.js"></script>
 </head>
 
 <body>
     <section class="firstpage">
         <canvas id="boardcanvas" class="full"></canvas>
     </section>
-    <section>
-        <div class="panel panel-primary">
+    <section class="secondpage">
+        <div class="full panel panel-primary">
             <div class="panel-heading">
-              <h3 class="panel-title">Panel title</h3>
+                <h3 class="panel-title">Panel title</h3>
             </div>
             <div class="panel-body">
               Panel content
             </div>
         </div>
     </section>
-
-    <script src="main.js"></script>
 </body>
 
 </html>
