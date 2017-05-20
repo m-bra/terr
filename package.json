@@ -25,6 +25,7 @@
   "devDependencies": {
     "coffee-loader": "^0.7.3",
     "coffee-script": "^1.12.6",
-    "webpack": "^2.5.1"
+    "webpack": "^2.5.1",
+    "webpack-dev-server": "^2.4.5"
   }
 }
