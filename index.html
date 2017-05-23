@@ -6,6 +6,8 @@
 
      <meta charset="UTF-8">
 
+     <!--
+
      <script
         src="https://code.jquery.com/jquery-3.2.1.min.js"
         integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
@@ -20,9 +22,12 @@
 
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
         integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
-        crossorigin="anonymous"></script>
+        crossorigin="anonymous"></script> -->
 
     <!--<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">-->
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/seedrandom/2.4.3/seedrandom.min.js">
+</script>
 
     <style>
         html, body {
@@ -47,6 +52,13 @@
             margin: 0px;
         }
 
+        #boardcanvas-nop {
+            height: 200%;
+            width: 200%;
+            left: -50%;
+            right: -50%;
+        }
+
     </style>
 
     <script src="bundle.js"></script>
@@ -57,14 +69,7 @@
         <canvas id="boardcanvas" class="full"></canvas>
     </section>
     <section class="secondpage">
-        <div class="full panel panel-primary">
-            <div class="panel-heading">
-                <h3 class="panel-title">Panel title</h3>
-            </div>
-            <div class="panel-body">
-              Panel content
-            </div>
-        </div>
+
     </section>
 </body>
 

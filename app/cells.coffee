@@ -1,17 +1,47 @@
 
+class Cell
+  @withLocalBlockID: (id) -> if id > 0 then id
+  @withGlobalTerrID: (id) -> -id
+  @isLocalBlockID: (id) -> id > 0
+  @isGlobalTerrID: (id) -> id <= 0
+
+module.exports.Cell = Cell
+
+emptyBlock = (x, y, w, h, maxBlockID) ->
+  rng = new Math.seedrandom (x.toString() + y.toString())
+  for [0..w]
+    for [0..h]
+      Cell.withLocalBlockID (1 + Math.abs(rng.int32() % maxBlockID))
+
 module.exports.Cells = class
   constructor: (w, h) ->
+    @w = w
+    @h = h
     @maxBlockID = 5
-    @cells =
-      for [0..w]
-        for [0..h]
-          blockID: Math.floor(this.maxBlockID * 0.99 * Math.random())
-          territoryID: 0 # TODO: territoryID is part of blockID!
+    @cells = emptyBlock 0, 0, 2*w, 2*h, 5
+
+  isCellLoaded: (x, y) ->
+    x >= -@w and x < @w and
+      y >= -@h and y < @h
+
+  getBlockID: (x, y) ->
+    if @isCellLoaded x, y
+      @cells[x + @w][y + @h]
+    else
+      Cell.withLocalBlockID 0
+
+  setBlockID: (x, y, id) ->
+    if @isCellLoaded x, y
+      @cells[x + @w][y + @h] = id
+    return
 
   forBlock: (x, y, f) ->
-    blockID = @cells[x][y].blockID
-    hash = (x, y) => x * @cells.length + y
-    unhash = (h) => [(Math.floor (h / @cells.length)), h % @cells.length]
+    blockID = @getBlockID x, y
+    # yea ik its serialize not hash but who cares i dont
+    hash = (x, y) -> x.toString() + "$" + y.toString()
+    unhash = (h) ->
+      strs = h.split '$'
+      [(parseInt strs[0]), (parseInt strs[1])]
     block = new Set([hash(x, y)])
     updatedBlock = true
 
@@ -33,8 +63,8 @@ module.exports.Cells = class
 
         for n in neighbors
           nHash = hash(n[0], n[1])
-          if n[0] >= 0 && n[0] < @cells.length && n[1] >=0 && n[1] < @cells[0].length
-            if @cells[n[0]][n[1]].blockID == blockID && !block.has(nHash)
+          if @isCellLoaded n[0], n[1]
+            if (@getBlockID n[0], n[1]) == blockID && !block.has(nHash)
               f(n[0], n[1])
               block.add nHash
               updatedBlock = true
