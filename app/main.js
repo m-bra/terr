@@ -77,7 +77,12 @@ function init() {
             if (top > 0) {
                 top-= hiddenCanvasHeight;
                 canvasShift[1]-= hiddenCanvasHeight;
-                dirty = true;
+                let data = context.getImageData(0, 0, canvas.width, canvas.height);
+                canvas.height+= hiddenCanvasHeight;
+                canvas.style.height = util.toStylePx(hiddenCanvasHeight +
+                    util.fromStylePxStr(canvas.style.height));
+                context.putImageData(data, hiddenCanvasHeight, 0);
+                render({x: 0, y: 0, width: canvas.width, height: hiddenCanvasHeight});
             }
             if (left + canvas.width < window.innerWidth) {
                 let data = context.getImageData(0, 0, canvas.width, canvas.height);
