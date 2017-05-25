@@ -35,13 +35,8 @@ module.exports.Viewport = class Viewport
       [@cellWidth() / 2, @cellHeight()] # bottom to base
     ]
 
-    console.log("base: " + baseX + ", " + baseY)
-    console.log("baseRel: " + [baseRelX, baseRelY])
-    console.log("candidates: " + candidates)
-
     dist2 = ([aX, aY], [bX, bY]) -> (aX-bX)*(aX-bX)+(aY-bY)*(aY-bY)
     dists = ((dist2 [baseRelX, baseRelY], candidates[i]) for i in [0..2])
-    console.log "distances: " + dists[1]
 
     if dists[0] < dists[1]
       if dists[0] < dists[2]
@@ -82,14 +77,15 @@ module.exports.render = (context, viewport, cellregion, shift, cells) ->
 
   [firstX, firstY] = viewport.getCellCenter [cellregion.x, cellregion.y]
 
-  context.fillStyle = '#111111'
-  context.fillRect firstX + shift[0], firstY + shift[1],
-    cellregion.width * viewport.cellWidth(),
-    cellregion.height * viewport.cellHeight()
+  rndclr = -> Math.floor (Math.random() * 256)
+  context.fillStyle = '#111111' # util.rgbToHex rndclr(), rndclr(), rndclr()
+  context.fillRect firstX + shift[0] - 2, firstY + shift[1] - 2,
+    cellregion.width * viewport.cellWidth() + 2,
+    cellregion.height * viewport.cellHeight() + 2
 
   dx = 0
   inY = cellregion.y
-  while inY < cellregion.y + cellregion.height
+  while inY <= cellregion.y + cellregion.height
     # because cellregion.height goes down VERTICALLY, not diagonally
     inX = Math.floor(cellregion.x + dx - ((inY - cellregion.y) / 2))
     [absCenterX, absCenterY] = viewport.getCellCenter [inX, inY]

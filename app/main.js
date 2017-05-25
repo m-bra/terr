@@ -1,4 +1,6 @@
 
+'use strict';
+
 window.onload = initMainModule;
 
 function initMainModule() {
@@ -14,10 +16,10 @@ function initMainModule() {
     const hexHeight = hexWidth / Math.cos(Math.PI / 6);
     const hexSideHeight = hexWidth * Math.tan(Math.PI / 6);
 
-    const cellWidth = hexWidth;
-    const cellHeight = (hexHeight + hexSideHeight) / 2;
+    const cellWidth = Math.floor(hexWidth);
+    const cellHeight = Math.floor((hexHeight + hexSideHeight) / 2);
     
-    const chunkWidth = 16 * cellWidth, chunkHeight = 16 * cellHeight;
+    const chunkWidth = 4, chunkHeight = 4;
     let renderChunks = {
         /*
          * For example
@@ -37,10 +39,6 @@ function initMainModule() {
                     return this[x][y];
             return undefined;
          },
-         getChunkOr: function(x, y, f) {
-            if (!getChunk(x, y))
-                return f();
-         },
          setChunk: function(x, y, chunk) {
             if (!(x in this))
                 this[x] = {};
@@ -52,42 +50,42 @@ function initMainModule() {
     util.setStylePos(canvas.style, [0, 0]);
     let context = canvas.getContext('2d');
     let viewport = new Viewport({cellWidth: cellWidth, cellHeight: cellHeight});
-
-    function renderCanvasRegion(canvasRegion) {
-        let cregion = {};
-        cregion.width = Math.floor(canvasRegion.width / viewport.cellWidth()) + 1;
-        cregion.height = Math.floor(canvasRegion.height / viewport.cellHeight()) + 1;
-        
-        canvasShift = [
-            renderChunks.shown.x * chunkWidth,
-            renderChunks.shown.y * chunkHeight
-        ];
-        
-        cregion.floatY = (canvasShift[1] + canvasRegion.y) / viewport.cellHeight();
-        cregion.floatX = (canvasShift[0] + canvasRegion.x) / viewport.cellWidth() - cregion.floatY/2;
-        cregion.x = Math.floor(cregion.floatX);
-        cregion.y = Math.floor(cregion.floatY);
-        let shift = [-canvasShift[0] + (cregion.x - cregion.floatX),
-            -canvasShift[1] + (cregion.y - cregion.floatY)];
-        graphics.render(context, viewport, cregion, shift, cells);
-    };
     
-    function renderChunk([chunkX, chunkY]) {
-        const region = {
-            x: (chunkX - renderChunks.shown.x) * chunkWidth,
-            y: (chunkY - renderChunks.shown.y) * chunkHeight,
-            width: chunkWidth,
-            height: chunkHeight,
+    function renderChunk([chunkX, chunkY], nocache) {
+        nocache = true;
+        const canvasRegion = {
+            x: (chunkX - renderChunks.shown.x) * chunkWidth * cellWidth,
+            y: (chunkY - renderChunks.shown.y) * chunkHeight * cellHeight,
+            width: chunkWidth * cellWidth,
+            height: chunkHeight * cellHeight,
         };
         
         const chunkData = renderChunks.getChunk(chunkX, chunkY);
-        if (chunkData) { 
+        if (chunkData && !nocache) { 
             // let's just hope chunkData has the right size
-            context.putImageData(region.x, region.y, chunkData);
+            context.putImageData(chunkData, canvasRegion.x, canvasRegion.y);
         }
         else {
-            renderCanvasRegion(region);
-            const newChunkData = context.getImageData(region.x, region.y, region.width, region.height);
+            let cregion = {};
+            cregion.width = chunkWidth;
+            cregion.height = chunkHeight;
+            
+            const canvasShift = [
+                renderChunks.shown.x * chunkWidth * cellWidth,
+                renderChunks.shown.y * chunkHeight * cellHeight
+            ];
+            
+            cregion.y = chunkY * chunkHeight;
+            let shiftX = cregion.y / 2;
+            cregion.x = chunkX * chunkWidth - Math.floor(shiftX);
+            if (cregion.y % 2 != 0)
+                console.log("no, i think you don't understand. chunkHeight must be a multiple of two!");
+     
+            let shift = [-canvasShift[0], -canvasShift[1]];
+            graphics.render(context, viewport, cregion, shift, cells);
+            
+            const newChunkData = context.getImageData(canvasRegion.x, canvasRegion.y, 
+                    canvasRegion.width, canvasRegion.height);
             renderChunks.setChunk(chunkX, chunkY, newChunkData);
         }
     }
@@ -102,12 +100,12 @@ function initMainModule() {
             (chunkY - renderChunks.shown.y)
         ];
         
-        let chunkSize = [chunkWidth, chunkHeight];
+        let chunkSize = [chunkWidth * cellWidth, chunkHeight * cellHeight];
         
         const canvasPos = util.getStylePos(canvas.style);
         const canvasSize = util.getCanvasSize(canvas);
-        let newCanvasPos = canvasPos;
-        let newCanvasSize = canvasSize;
+        let newCanvasPos = [canvasPos[0], canvasPos[1]];
+        let newCanvasSize = [canvasSize[0], canvasSize[1]];
         let update = false;
         
         for (let i = 0; i < 2; ++i) {
@@ -116,21 +114,24 @@ function initMainModule() {
                 newCanvasSize[i]+= -relChunkCoords[i] * chunkSize[i];
                 update = true;
             }
-            if (relChunkCoords[i] > Math.floor(canvasSize[i] / chunkSize[i])) {
+            if (relChunkCoords[i] >= Math.ceil(canvasSize[i] / chunkSize[i])) {
                 newCanvasSize[i] = (1 + relChunkCoords[i]) * chunkSize[i];
                 update = true;
             }
         }
         
         if (update) {
-            const data = context.getImageData(0, 0, canvasSize[0], canvasSize[1]);
+            const data = canvasSize[0] * canvasSize[1] 
+                ? context.getImageData(0, 0, canvasSize[0], canvasSize[1])
+                : null;
             util.setStylePos(canvas.style, newCanvasPos);
             util.setCanvasWidth(canvas, newCanvasSize[0]);
             util.setCanvasHeight(canvas, newCanvasSize[1]);
-            context.putImageData(data, canvasPos[0] - newCanvasPos[0], canvasPos[1] - newCanvasPos[1]);   
-            renderChunks.shown.x+= Math.floor((newCanvasPos[0] - canvasPos[0]) / chunkWidth);
-            renderChunks.shown.y+= Math.floor((newCanvasPos[1] - canvasPos[1]) / chunkHeight);
-            console.log("Do I have to floor this shit?" + renderChunks);
+            if (data)
+                context.putImageData(data, canvasPos[0] - newCanvasPos[0], canvasPos[1] - newCanvasPos[1]);   
+            renderChunks.shown.x+= Math.floor((newCanvasPos[0] - canvasPos[0]) / (chunkWidth*cellWidth));
+            renderChunks.shown.y+= Math.floor((newCanvasPos[1] - canvasPos[1]) / (chunkHeight*cellHeight));
+            console.log("Do I have to floor this shit?" + renderChunks.shown.x);
         }              
     }
     
@@ -140,8 +141,8 @@ function initMainModule() {
         const [left, top] = canvasPos;
         
         const chunksRange = [
-            Math.ceil(canvas.width / chunkWidth), // TODO sometimes we need ceil. check for other places, too.
-            Math.ceil(canvas.height / chunkHeight),
+            Math.ceil(canvas.width / (chunkWidth*cellWidth)), // TODO sometimes we need ceil. check for other places, too.
+            Math.ceil(canvas.height / (chunkHeight*cellHeight)),
         ];
 
         let chunks = [];
@@ -166,6 +167,7 @@ function initMainModule() {
             fitCanvasForChunk(chunks[i]);
             renderChunk(chunks[i]);
         }
+        return chunks.length > 0;
     }
     
     let dragX = 0;
@@ -185,7 +187,8 @@ function initMainModule() {
             let canvasPos = util.getStylePos(canvas.style);
             canvasPos[0]+= dx;
             canvasPos[1]+= dy;
-            util.setStylePos(canvas.style, canvasPos);            
+            util.setStylePos(canvas.style, canvasPos);   
+            fitCanvasForWindow();         
         }
     });
 
@@ -207,21 +210,31 @@ function initMainModule() {
         {
             let [left, top] = util.getStylePos(canvas.style);
             let startCoords = viewport.getCellCoords([
-                renderChunks.shown.x * chunkWidth + x - left, 
-                renderChunks.shown.y * chunkHeight + y - top
+                renderChunks.shown.x * chunkWidth*cellWidth + x - left, 
+                renderChunks.shown.y * chunkHeight*cellHeight + y - top
             ]);
+            let dirtyChunks = {};
             cells.forBlock(startCoords[0], startCoords[1], function(cx, cy){
                 cells.setBlockID(cx, cy, Cell.withGlobalTerrID(isLeftClick ? 1 : 2));
+                const chunkY = Math.floor(cy / chunkHeight);
+                const chunkX = Math.floor((cx+cy/2) / chunkWidth);
+                dirtyChunks[chunkX.toString() + ";" + chunkY.toString()] = true;
             });
-
-            renderChunk([
-                Math.floor((x-left) / chunkWidth) + renderChunks.shown.x,
-                Math.floor((y-top) / chunkHeight) + renderChunks.shown.y
-            ]);
+            
+            for (let chunk in dirtyChunks)
+                if (dirtyChunks.hasOwnProperty(chunk))
+                {
+                    const strs = chunk.split(";");
+                    const chunkXY = [parseInt(strs[0]), parseInt(strs[1])];
+                    console.log("render" + chunkXY);
+                    renderChunk(chunkXY, true);
+                }
         }
     });
 
     canvas.addEventListener('contextmenu', function(e){e.preventDefault(); return false});
 
-    fitCanvasForWindow();
+    fitCanvasForChunk([0, 0]);
+    renderChunk([0, 0]);
+    while (fitCanvasForWindow()) ;
 }
