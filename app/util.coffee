@@ -27,9 +27,27 @@ setStylePos = (style, pos) ->
   style.top = toStylePx pos[1]
   return
 
+setCanvasWidth = (canvas, width) ->
+  canvas.width = width
+  canvas.style.width = toStylePx width
+  
+setCanvasHeight = (canvas, height) ->
+  canvas.height = height
+  canvas.style.height = toStylePx height
+
 module.exports =
   rgbToHex: rgbToHex
   toStylePx: toStylePx
   fromStylePxStr: fromStylePxStr
   getStylePos: getStylePos
   setStylePos: setStylePos
+  setCanvasHeight: setCanvasHeight
+  setCanvasWidth: setCanvasWidth
+  getCanvasSize: (canvas) -> [canvas.width, canvas.height]
+  setCanvasSizeWithData: (canvas, size) ->
+    context = canvas.getContext '2d'
+    data = context.getImageData 0, 0, canvas.width, canvas.height
+    setCanvasWidth canvas, size[0]
+    setCanvasHeight canvas, size[1]
+    context.putImageData data, 0, 0
+    return
