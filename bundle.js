@@ -70,133 +70,6 @@
 /* 0 */
 /***/ (function(module, exports) {
 
-var Cell, emptyBlock;
-
-Cell = (function() {
-  function Cell() {}
-
-  Cell.withLocalBlockID = function(id) {
-    if (id > 0) {
-      return id;
-    }
-  };
-
-  Cell.withGlobalTerrID = function(id) {
-    return -id;
-  };
-
-  Cell.isLocalBlockID = function(id) {
-    return id > 0;
-  };
-
-  Cell.isGlobalTerrID = function(id) {
-    return id <= 0;
-  };
-
-  return Cell;
-
-})();
-
-module.exports.Cell = Cell;
-
-emptyBlock = function(x, y, w, h, maxBlockID) {
-  var i, ref, results, rng;
-  rng = new Math.seedrandom(x.toString() + y.toString());
-  results = [];
-  for (i = 0, ref = w; 0 <= ref ? i <= ref : i >= ref; 0 <= ref ? i++ : i--) {
-    results.push((function() {
-      var j, ref1, results1;
-      results1 = [];
-      for (j = 0, ref1 = h; 0 <= ref1 ? j <= ref1 : j >= ref1; 0 <= ref1 ? j++ : j--) {
-        results1.push(Cell.withLocalBlockID(1 + Math.abs(rng.int32() % maxBlockID)));
-      }
-      return results1;
-    })());
-  }
-  return results;
-};
-
-module.exports.Cells = (function() {
-  function _Class(w, h) {
-    this.w = w;
-    this.h = h;
-    this.maxBlockID = 5;
-    this.cells = emptyBlock(0, 0, 2 * w, 2 * h, 5);
-  }
-
-  _Class.prototype.isCellLoaded = function(x, y) {
-    return x >= -this.w && x < this.w && y >= -this.h && y < this.h;
-  };
-
-  _Class.prototype.getBlockID = function(x, y) {
-    if (this.isCellLoaded(x, y)) {
-      return this.cells[x + this.w][y + this.h];
-    } else {
-      return Cell.withLocalBlockID(0);
-    }
-  };
-
-  _Class.prototype.setBlockID = function(x, y, id) {
-    if (this.isCellLoaded(x, y)) {
-      this.cells[x + this.w][y + this.h] = id;
-    }
-  };
-
-  _Class.prototype.forBlock = function(x, y, f) {
-    var block, blockID, hash, results, unhash, updatedBlock;
-    blockID = this.getBlockID(x, y);
-    hash = function(x, y) {
-      return x.toString() + "$" + y.toString();
-    };
-    unhash = function(h) {
-      var strs;
-      strs = h.split('$');
-      return [parseInt(strs[0]), parseInt(strs[1])];
-    };
-    block = new Set([hash(x, y)]);
-    updatedBlock = true;
-    f(x, y);
-    results = [];
-    while (updatedBlock) {
-      updatedBlock = false;
-      results.push(block.forEach((function(_this) {
-        return function(coordHash) {
-          var coord, i, len, n, nHash, neighbors, results1;
-          coord = unhash(coordHash);
-          neighbors = [[coord[0] + 1, coord[1]], [coord[0] - 1, coord[1]], [coord[0], coord[1] + 1], [coord[0], coord[1] - 1], [coord[0] + 1, coord[1] - 1], [coord[0] - 1, coord[1] + 1]];
-          results1 = [];
-          for (i = 0, len = neighbors.length; i < len; i++) {
-            n = neighbors[i];
-            nHash = hash(n[0], n[1]);
-            if (_this.isCellLoaded(n[0], n[1])) {
-              if ((_this.getBlockID(n[0], n[1])) === blockID && !block.has(nHash)) {
-                f(n[0], n[1]);
-                block.add(nHash);
-                updatedBlock = true;
-                results1.push(0);
-              } else {
-                results1.push(void 0);
-              }
-            } else {
-              results1.push(void 0);
-            }
-          }
-          return results1;
-        };
-      })(this)));
-    }
-    return results;
-  };
-
-  return _Class;
-
-})();
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports) {
-
 var componentToHex, fromStylePxStr, getStylePos, rgbToHex, setCanvasHeight, setCanvasWidth, setStylePos, toStylePx;
 
 componentToHex = function(c) {
@@ -264,14 +137,163 @@ module.exports = {
 
 
 /***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Cell, emptyBlock, util;
+
+util = __webpack_require__(0);
+
+Cell = (function() {
+  function Cell() {}
+
+  Cell.withLocalBlockID = function(id) {
+    if (id > 0) {
+      return id;
+    }
+  };
+
+  Cell.withGlobalTerrID = function(id) {
+    return -id;
+  };
+
+  Cell.isLocalBlockID = function(id) {
+    return id > 0;
+  };
+
+  Cell.isGlobalTerrID = function(id) {
+    return id <= 0;
+  };
+
+  return Cell;
+
+})();
+
+module.exports.Cell = Cell;
+
+emptyBlock = function(x, y, w, h) {
+  var j, ref, results, rng;
+  rng = new Math.seedrandom(x.toString() + y.toString());
+  results = [];
+  for (j = 0, ref = w; 0 <= ref ? j <= ref : j >= ref; 0 <= ref ? j++ : j--) {
+    results.push((function() {
+      var k, ref1, results1;
+      results1 = [];
+      for (k = 0, ref1 = h; 0 <= ref1 ? k <= ref1 : k >= ref1; 0 <= ref1 ? k++ : k--) {
+        if ((Math.abs(rng.int32())) % 100 < 26) {
+          results1.push(Cell.withLocalBlockID(1));
+        } else {
+          results1.push(Cell.withLocalBlockID(2 + Math.abs(rng.int32() % 18)));
+        }
+      }
+      return results1;
+    })());
+  }
+  return results;
+};
+
+module.exports.Cells = (function() {
+  function _Class(w, h) {
+    var amplitude, b, g, i, j, r, rnd, rng;
+    this.w = w;
+    this.h = h;
+    this.cells = emptyBlock(0, 0, 2 * w, 2 * h);
+    amplitude = 0x20;
+    this.blockColors = {};
+    this.blockColors[Cell.withGlobalTerrID(1)] = '#1c703f';
+    this.blockColors[Cell.withGlobalTerrID(2)] = '#471c23';
+    rng = new Math.seedrandom('blockColorsSeed');
+    for (i = j = 0; j <= 20; i = ++j) {
+      rnd = (Math.abs(rng.int32())) % amplitude;
+      r = 0x3A + rnd;
+      g = 0x3F + rnd;
+      b = 0x44 + rnd;
+      this.blockColors[Cell.withLocalBlockID(i)] = util.rgbToHex(r, g, b);
+    }
+  }
+
+  _Class.prototype.getBlockColor = function(id) {
+    return this.blockColors[id];
+  };
+
+  _Class.prototype.isCellLoaded = function(x, y) {
+    return x >= -this.w && x < this.w && y >= -this.h && y < this.h;
+  };
+
+  _Class.prototype.getBlockID = function(x, y) {
+    if (this.isCellLoaded(x, y)) {
+      return this.cells[x + this.w][y + this.h];
+    } else {
+      return Cell.withLocalBlockID(0);
+    }
+  };
+
+  _Class.prototype.setBlockID = function(x, y, id) {
+    if (this.isCellLoaded(x, y)) {
+      this.cells[x + this.w][y + this.h] = id;
+    }
+  };
+
+  _Class.prototype.forBlock = function(x, y, f) {
+    var block, blockID, hash, results, unhash, updatedBlock;
+    blockID = this.getBlockID(x, y);
+    hash = function(x, y) {
+      return x.toString() + "$" + y.toString();
+    };
+    unhash = function(h) {
+      var strs;
+      strs = h.split('$');
+      return [parseInt(strs[0]), parseInt(strs[1])];
+    };
+    block = new Set([hash(x, y)]);
+    updatedBlock = true;
+    f(x, y);
+    results = [];
+    while (updatedBlock) {
+      updatedBlock = false;
+      results.push(block.forEach((function(_this) {
+        return function(coordHash) {
+          var coord, j, len, n, nHash, neighbors, results1;
+          coord = unhash(coordHash);
+          neighbors = [[coord[0] + 1, coord[1]], [coord[0] - 1, coord[1]], [coord[0], coord[1] + 1], [coord[0], coord[1] - 1], [coord[0] + 1, coord[1] - 1], [coord[0] - 1, coord[1] + 1]];
+          results1 = [];
+          for (j = 0, len = neighbors.length; j < len; j++) {
+            n = neighbors[j];
+            nHash = hash(n[0], n[1]);
+            if (_this.isCellLoaded(n[0], n[1])) {
+              if ((_this.getBlockID(n[0], n[1])) === blockID && !block.has(nHash)) {
+                f(n[0], n[1]);
+                block.add(nHash);
+                updatedBlock = true;
+                results1.push(0);
+              } else {
+                results1.push(void 0);
+              }
+            } else {
+              results1.push(void 0);
+            }
+          }
+          return results1;
+        };
+      })(this)));
+    }
+    return results;
+  };
+
+  return _Class;
+
+})();
+
+
+/***/ }),
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Cell, Viewport, util;
 
-util = __webpack_require__(1);
+util = __webpack_require__(0);
 
-Cell = __webpack_require__(0).Cell;
+Cell = __webpack_require__(1).Cell;
 
 module.exports.Viewport = Viewport = (function() {
   function Viewport(arg) {
@@ -335,41 +357,30 @@ module.exports.Viewport = Viewport = (function() {
 })();
 
 module.exports.render = function(context, viewport, cellregion, shift, cells) {
-  var absCenterX, absCenterY, amplitude, b, blockColors, blockID, centerX, centerY, connectBottomLeft, connectBottomRight, connectLeft, connectRight, connectTopLeft, connectTopRight, dx, firstX, firstY, g, hexHeight, hexScale, hexSideHeight, hexWidth, i, inX, inY, innerFill, innerHeight, innerSideHeight, innerWidth, j, r, ref, ref1, ref2, ref3, results, rnd, rndclr;
+  var absCenterX, absCenterY, blockID, centerX, centerY, connectBottomLeft, connectBottomRight, connectLeft, connectRight, connectTopLeft, connectTopRight, dx, firstX, firstY, hexHeight, hexScale, hexSideHeight, hexWidth, inX, inY, innerFill, innerHeight, innerSideHeight, innerWidth, ref, ref1, ref2, results, rndclr;
   hexScale = 1.01;
   hexWidth = viewport.cellWidth() * hexScale;
   hexHeight = hexWidth * hexScale / Math.cos(Math.PI / 6);
   hexSideHeight = hexWidth * Math.tan(Math.PI / 6) * hexScale;
-  innerFill = 0.92 / hexScale;
+  innerFill = 0.9 / hexScale;
   innerWidth = hexWidth * innerFill;
   innerHeight = hexHeight * innerFill;
   innerSideHeight = hexSideHeight * innerFill;
-  amplitude = 0x14;
-  blockColors = {};
-  blockColors[Cell.withGlobalTerrID(1)] = '#1c703f';
-  blockColors[Cell.withGlobalTerrID(2)] = '#471c23';
-  for (i = j = 0, ref = cells.maxBlockID + 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
-    rnd = i * amplitude / cells.maxBlockID;
-    r = 0x3A + rnd;
-    g = 0x3F + rnd;
-    b = 0x44 + rnd;
-    blockColors[Cell.withLocalBlockID(i)] = util.rgbToHex(r, g, b);
-  }
-  ref1 = viewport.getCellCenter([cellregion.x, cellregion.y]), firstX = ref1[0], firstY = ref1[1];
+  ref = viewport.getCellCenter([cellregion.x, cellregion.y]), firstX = ref[0], firstY = ref[1];
   rndclr = function() {
     return Math.floor(Math.random() * 256);
   };
   context.fillStyle = '#111111';
-  context.fillRect(firstX + shift[0] - 2, firstY + shift[1] - 2, cellregion.width * viewport.cellWidth() + 2, cellregion.height * viewport.cellHeight() + 2);
+  context.fillRect(firstX + shift[0] - 1, firstY + shift[1] - 1, cellregion.width * viewport.cellWidth() + 1, cellregion.height * viewport.cellHeight() + 1);
   dx = 0;
   inY = cellregion.y;
   results = [];
   while (inY <= cellregion.y + cellregion.height) {
     inX = Math.floor(cellregion.x + dx - ((inY - cellregion.y) / 2));
-    ref2 = viewport.getCellCenter([inX, inY]), absCenterX = ref2[0], absCenterY = ref2[1];
-    ref3 = [absCenterX + shift[0], absCenterY + shift[1]], centerX = ref3[0], centerY = ref3[1];
+    ref1 = viewport.getCellCenter([inX, inY]), absCenterX = ref1[0], absCenterY = ref1[1];
+    ref2 = [absCenterX + shift[0], absCenterY + shift[1]], centerX = ref2[0], centerY = ref2[1];
     blockID = cells.getBlockID(inX, inY);
-    context.fillStyle = blockColors[blockID];
+    context.fillStyle = cells.getBlockColor(blockID);
     connectTopLeft = blockID === cells.getBlockID(inX, inY - 1);
     connectTopRight = blockID === cells.getBlockID(inX + 1, inY - 1);
     connectLeft = blockID === cells.getBlockID(inX - 1, inY);
@@ -435,8 +446,8 @@ window.onload = initMainModule;
 function initMainModule() {
     const canvas = document.getElementById('boardcanvas');
 
-    const util = __webpack_require__(1);
-    const {Cells, Cell} = __webpack_require__(0);
+    const util = __webpack_require__(0);
+    const {Cells, Cell} = __webpack_require__(1);
     let cells = new Cells(512, 512);
     const graphics = __webpack_require__(2);
     const Viewport = graphics.Viewport;
@@ -511,6 +522,11 @@ function initMainModule() {
                 console.log("no, i think you don't understand. chunkHeight must be a multiple of two!");
      
             let shift = [-canvasShift[0], -canvasShift[1]];
+            
+            cregion.x-= 1;
+            cregion.y-= 1;
+            cregion.width+= 2;
+            cregion.height+= 2;
             graphics.render(context, viewport, cregion, shift, cells);
             
             const newChunkData = context.getImageData(canvasRegion.x, canvasRegion.y, 

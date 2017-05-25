@@ -1,4 +1,6 @@
 
+util = require 'coffee-loader!./util.coffee'
+
 class Cell
   @withLocalBlockID: (id) -> if id > 0 then id
   @withGlobalTerrID: (id) -> -id
@@ -7,18 +9,35 @@ class Cell
 
 module.exports.Cell = Cell
 
-emptyBlock = (x, y, w, h, maxBlockID) ->
+emptyBlock = (x, y, w, h) ->
   rng = new Math.seedrandom (x.toString() + y.toString())
   for [0..w]
     for [0..h]
-      Cell.withLocalBlockID (1 + Math.abs(rng.int32() % maxBlockID))
+      if (Math.abs rng.int32()) % 100 < 26
+        Cell.withLocalBlockID 1
+      else
+        Cell.withLocalBlockID (2 + Math.abs (rng.int32() % 18))
 
 module.exports.Cells = class
   constructor: (w, h) ->
     @w = w
     @h = h
-    @maxBlockID = 5
-    @cells = emptyBlock 0, 0, 2*w, 2*h, 5
+    @cells = emptyBlock 0, 0, 2*w, 2*h
+    
+    amplitude = 0x20
+    @blockColors = {}
+    @blockColors[Cell.withGlobalTerrID 1] = '#1c703f'
+    @blockColors[Cell.withGlobalTerrID(2)] = '#471c23'
+
+    rng = new Math.seedrandom 'blockColorsSeed'
+    for i in [0 .. 20]
+        rnd = ((Math.abs rng.int32()) % amplitude)
+        r = 0x3A + rnd
+        g = 0x3F + rnd
+        b = 0x44 + rnd
+        @blockColors[Cell.withLocalBlockID i] = util.rgbToHex r, g, b
+
+  getBlockColor: (id) -> @blockColors[id]
 
   isCellLoaded: (x, y) ->
     x >= -@w and x < @w and

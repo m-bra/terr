@@ -30,6 +30,6 @@
   },
   "scripts": {
     "start": "webpack-dev-server --open",
-    "build": "webpack",
+    "pack": "webpack"
    }
 }

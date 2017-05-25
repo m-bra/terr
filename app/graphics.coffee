@@ -59,29 +59,18 @@ module.exports.render = (context, viewport, cellregion, shift, cells) ->
   hexSideHeight = hexWidth * Math.tan(Math.PI / 6) * hexScale
 
   # metrics of inner hexagon
-  innerFill = 0.92 / hexScale
+  innerFill = 0.9 / hexScale
   innerWidth = hexWidth * innerFill
   innerHeight = hexHeight * innerFill
   innerSideHeight = hexSideHeight * innerFill
-
-  amplitude = 0x14
-  blockColors = {}
-  blockColors[Cell.withGlobalTerrID 1] = '#1c703f'
-  blockColors[Cell.withGlobalTerrID(2)] = '#471c23'
-  for i in [0 .. cells.maxBlockID + 1]
-    rnd = i * amplitude / cells.maxBlockID
-    r = 0x3A + rnd
-    g = 0x3F + rnd
-    b = 0x44 + rnd
-    blockColors[Cell.withLocalBlockID i] = util.rgbToHex r, g, b
 
   [firstX, firstY] = viewport.getCellCenter [cellregion.x, cellregion.y]
 
   rndclr = -> Math.floor (Math.random() * 256)
   context.fillStyle = '#111111' # util.rgbToHex rndclr(), rndclr(), rndclr()
-  context.fillRect firstX + shift[0] - 2, firstY + shift[1] - 2,
-    cellregion.width * viewport.cellWidth() + 2,
-    cellregion.height * viewport.cellHeight() + 2
+  context.fillRect firstX + shift[0] - 1, firstY + shift[1] - 1,
+    cellregion.width * viewport.cellWidth() + 1,
+    cellregion.height * viewport.cellHeight() + 1
 
   dx = 0
   inY = cellregion.y
@@ -92,7 +81,7 @@ module.exports.render = (context, viewport, cellregion, shift, cells) ->
     [centerX, centerY] = [absCenterX + shift[0], absCenterY + shift[1]]
 
     blockID = cells.getBlockID inX, inY
-    context.fillStyle = blockColors[blockID]
+    context.fillStyle = cells.getBlockColor blockID
 
     # perhaps factor out the variable allocation
     connectTopLeft = blockID == cells.getBlockID inX, (inY - 1)

@@ -82,6 +82,11 @@ function initMainModule() {
                 console.log("no, i think you don't understand. chunkHeight must be a multiple of two!");
      
             let shift = [-canvasShift[0], -canvasShift[1]];
+            
+            cregion.x-= 1;
+            cregion.y-= 1;
+            cregion.width+= 2;
+            cregion.height+= 2;
             graphics.render(context, viewport, cregion, shift, cells);
             
             const newChunkData = context.getImageData(canvasRegion.x, canvasRegion.y, 
