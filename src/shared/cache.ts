@@ -1,8 +1,28 @@
 type Optional<T> = T | null;
 
+import {vec2} from "tsm"
+
 export interface StringCache {
     get<T>(key: string): Optional<T>
     set<T>(key: string, value: T): void
+}
+
+export class PrefixCache implements StringCache {
+    prefix: string
+    subCache: StringCache 
+
+    constructor(prefix: string, subCache: StringCache) {
+        this.subCache = subCache
+        this.prefix = prefix
+    }
+
+    get<T>(key: string): Optional<T> {
+        return this.subCache.get(this.prefix + key)
+    }
+
+    set<T>(key: string, value: T) {
+        this.subCache.set(this.prefix + key, value);
+    }
 }
 
 

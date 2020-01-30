@@ -1,0 +1,2 @@
+
+export type NationID = number
