@@ -4,7 +4,7 @@
   "main": "dist/app.js",
   "license": "MIT",
   "scripts": {
-    "start:dev": "nodemon dist/app.js",
+    "start:dev": "nodemon dist/server.js",
     "build:dev": "tsc --watch --preserveWatchOutput",
     "build:html": "nodemon --exec \"cp src/index.html dist/index.html\" -e html -w src",
     "dev": "concurrently \"npm:build:dev\" \"npm:start:dev\" \"cd dist && python3 -m http.server\""
