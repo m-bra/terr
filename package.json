@@ -6,7 +6,8 @@
   "scripts": {
     "start:dev": "nodemon dist/app.js",
     "build:dev": "tsc --watch --preserveWatchOutput",
-    "dev": "concurrently \"npm:build:dev\" \"npm:start:dev\""
+    "build:html": "nodemon --exec \"cp src/index.html dist/index.html\" -e html -w src",
+    "dev": "concurrently \"npm:build:dev\" \"npm:start:dev\" \"cd dist && python3 -m http.server\""
   },
   "devDependencies": {
     "@types/express": "^4.17.2",
